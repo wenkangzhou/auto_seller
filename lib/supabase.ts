@@ -5,6 +5,33 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 const supabaseServiceKey = process.env.SUPABASE_SECRET_KEY
 
+// Browser-side client (for frontend auth + public reads)
+export function createBrowserClient() {
+  if (!supabaseUrl || !supabaseKey) {
+    throw new Error('Missing Supabase environment variables (NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)')
+  }
+  return createClient(supabaseUrl, supabaseKey, {
+    auth: {
+      autoRefreshToken: true,
+      persistSession: true,
+      detectSessionInUrl: true,
+    },
+  })
+}
+
+// Singleton for browser
+let browserClient: ReturnType<typeof createBrowserClient> | null = null
+export function getBrowserClient() {
+  if (typeof window === 'undefined') {
+    // Server fallback - should not be used in components
+    return createBrowserClient()
+  }
+  if (!browserClient) {
+    browserClient = createBrowserClient()
+  }
+  return browserClient
+}
+
 function getClientSideClient() {
   if (!supabaseUrl || !supabaseKey) {
     throw new Error('Missing Supabase environment variables (NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY)')

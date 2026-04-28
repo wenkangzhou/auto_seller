@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { ShoppingCart, Search, Shield, Zap } from "lucide-react"
+import { ShoppingCart, Search, Zap } from "lucide-react"
 
 export function Navigation() {
   return (
@@ -25,13 +25,6 @@ export function Navigation() {
           >
             <Search className="h-4 w-4" />
             订单查询
-          </Link>
-          <Link
-            href="/admin"
-            className="flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white"
-          >
-            <Shield className="h-4 w-4" />
-            后台管理
           </Link>
         </nav>
       </div>
