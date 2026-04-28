@@ -3,37 +3,47 @@ import { supabaseServer } from "@/lib/supabase"
 
 export async function POST(req: NextRequest) {
   try {
-    const { orderId, email } = await req.json()
+    const { email } = await req.json()
 
-    if (!orderId || !email) {
-      return NextResponse.json({ error: "请提供订单号和邮箱" }, { status: 400 })
+    if (!email || !email.includes("@")) {
+      return NextResponse.json({ error: "请输入有效的邮箱地址" }, { status: 400 })
     }
 
     const supabase = supabaseServer()
 
-    // Get order
-    const { data: order, error: orderError } = await supabase
+    // Get all orders for this email
+    const { data: orders, error: ordersError } = await supabase
       .from("orders")
       .select("*")
-      .eq("id", orderId)
       .eq("email", email)
-      .single()
+      .order("created_at", { ascending: false })
 
-    if (orderError || !order) {
-      return NextResponse.json({ error: "未找到订单，请检查订单号和邮箱" }, { status: 404 })
+    if (ordersError) {
+      return NextResponse.json({ error: "查询订单失败" }, { status: 500 })
     }
 
-    // Get order items
+    if (!orders || orders.length === 0) {
+      return NextResponse.json({ error: "未找到该邮箱的订单" }, { status: 404 })
+    }
+
+    // Get order items for all orders
+    const orderIds = orders.map((o) => o.id)
     const { data: items, error: itemsError } = await supabase
       .from("order_items")
       .select("*")
-      .eq("order_id", orderId)
+      .in("order_id", orderIds)
 
     if (itemsError) {
       return NextResponse.json({ error: "查询订单详情失败" }, { status: 500 })
     }
 
-    return NextResponse.json({ order, items: items || [] })
+    // Group items by order
+    const ordersWithItems = orders.map((order) => ({
+      ...order,
+      items: (items || []).filter((item) => item.order_id === order.id),
+    }))
+
+    return NextResponse.json({ orders: ordersWithItems })
   } catch (err: any) {
     console.error("Query API error:", err)
     return NextResponse.json({ error: "服务器错误" }, { status: 500 })
