@@ -5,6 +5,7 @@ export interface Product {
   price: number
   currency: string
   image_url: string | null
+  sold_count: number
   status: 'active' | 'inactive'
   created_at: string
   updated_at: string

@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS products (
   currency TEXT NOT NULL DEFAULT 'USD',
   image_url TEXT,
   status TEXT NOT NULL DEFAULT 'active' CHECK (status IN ('active', 'inactive')),
+  sold_count INTEGER NOT NULL DEFAULT 0,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -65,6 +66,16 @@ BEGIN
     FROM cards
     WHERE product_id = product_uuid AND status = 'available'
   );
+END;
+$$ LANGUAGE plpgsql;
+
+-- Function to increment sold_count atomically
+CREATE OR REPLACE FUNCTION increment_sold_count(product_uuid UUID)
+RETURNS VOID AS $$
+BEGIN
+  UPDATE products
+  SET sold_count = sold_count + 1
+  WHERE id = product_uuid;
 END;
 $$ LANGUAGE plpgsql;
 

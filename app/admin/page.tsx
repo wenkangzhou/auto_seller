@@ -30,6 +30,8 @@ interface Product {
   price: number
   currency: string
   status: "active" | "inactive"
+  image_url: string | null
+  sold_count: number
   created_at: string
 }
 
@@ -70,6 +72,7 @@ export default function AdminPage() {
     price: "",
     currency: "USD",
     status: "active" as "active" | "inactive",
+    image_url: "",
   })
 
   // Card form
@@ -141,10 +144,11 @@ export default function AdminPage() {
         price: parseFloat(productForm.price),
         currency: productForm.currency,
         status: productForm.status,
+        image_url: productForm.image_url || null,
       }),
     })
     if (res.ok) {
-      setProductForm({ name: "", description: "", price: "", currency: "USD", status: "active" })
+      setProductForm({ name: "", description: "", price: "", currency: "USD", status: "active", image_url: "" })
       setShowProductForm(false)
       fetchData()
     }
@@ -163,11 +167,12 @@ export default function AdminPage() {
         price: parseFloat(productForm.price),
         currency: productForm.currency,
         status: productForm.status,
+        image_url: productForm.image_url || null,
       }),
     })
     if (res.ok) {
       setEditingProduct(null)
-      setProductForm({ name: "", description: "", price: "", currency: "USD", status: "active" })
+      setProductForm({ name: "", description: "", price: "", currency: "USD", status: "active", image_url: "" })
       fetchData()
     }
   }
@@ -211,6 +216,7 @@ export default function AdminPage() {
       price: product.price.toString(),
       currency: product.currency,
       status: product.status,
+      image_url: product.image_url || "",
     })
   }
 
@@ -341,7 +347,7 @@ export default function AdminPage() {
             <button
               onClick={() => {
                 setEditingProduct(null)
-                setProductForm({ name: "", description: "", price: "", currency: "USD", status: "active" })
+                setProductForm({ name: "", description: "", price: "", currency: "USD", status: "active", image_url: "" })
                 setShowProductForm(!showProductForm)
               }}
               className="inline-flex items-center gap-2 rounded-xl bg-sky-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-sky-600"
@@ -364,7 +370,7 @@ export default function AdminPage() {
                   <label className="mb-1.5 block text-xs text-zinc-400">名称 *</label>
                   <input
                     type="text"
-                    value={productForm.name}
+                    value={productForm.name || ""}
                     onChange={(e) => setProductForm({ ...productForm, name: e.target.value })}
                     className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-500"
                     required
@@ -376,7 +382,7 @@ export default function AdminPage() {
                     type="number"
                     step="0.01"
                     min="0"
-                    value={productForm.price}
+                    value={productForm.price || ""}
                     onChange={(e) => setProductForm({ ...productForm, price: e.target.value })}
                     className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-500"
                     required
@@ -387,8 +393,18 @@ export default function AdminPage() {
                 <label className="mb-1.5 block text-xs text-zinc-400">描述</label>
                 <input
                   type="text"
-                  value={productForm.description}
+                  value={productForm.description || ""}
                   onChange={(e) => setProductForm({ ...productForm, description: e.target.value })}
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-500"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs text-zinc-400">图片 URL</label>
+                <input
+                  type="url"
+                  value={productForm.image_url || ""}
+                  onChange={(e) => setProductForm({ ...productForm, image_url: e.target.value })}
+                  placeholder="https://example.com/image.png"
                   className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white outline-none focus:border-sky-500"
                 />
               </div>
@@ -429,8 +445,9 @@ export default function AdminPage() {
             <table className="w-full text-sm">
               <thead className="bg-zinc-900/80 text-zinc-400">
                 <tr>
-                  <th className="px-4 py-3 text-left font-medium">名称</th>
+                  <th className="px-4 py-3 text-left font-medium">产品</th>
                   <th className="px-4 py-3 text-left font-medium">价格</th>
+                  <th className="px-4 py-3 text-left font-medium">销量</th>
                   <th className="px-4 py-3 text-left font-medium">状态</th>
                   <th className="px-4 py-3 text-right font-medium">操作</th>
                 </tr>
@@ -439,12 +456,26 @@ export default function AdminPage() {
                 {products.map((product) => (
                   <tr key={product.id} className="hover:bg-zinc-900/50">
                     <td className="px-4 py-3">
-                      <div className="font-medium text-white">{product.name}</div>
-                      {product.description && (
-                        <div className="text-xs text-zinc-500">{product.description}</div>
-                      )}
+                      <div className="flex items-center gap-3">
+                        {product.image_url ? (
+                          <img src={product.image_url} alt={product.name} className="h-10 w-10 rounded-lg object-cover" />
+                        ) : (
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-zinc-800">
+                            <Package className="h-5 w-5 text-zinc-500" />
+                          </div>
+                        )}
+                        <div>
+                          <div className="font-medium text-white">{product.name}</div>
+                          {product.description && (
+                            <div className="text-xs text-zinc-500">{product.description}</div>
+                          )}
+                        </div>
+                      </div>
                     </td>
                     <td className="px-4 py-3 text-zinc-300">${product.price.toFixed(2)}</td>
+                    <td className="px-4 py-3">
+                      <span className="text-sm font-medium text-zinc-300">{product.sold_count || 0}</span>
+                    </td>
                     <td className="px-4 py-3">
                       <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
                         product.status === "active" ? "bg-emerald-500/10 text-emerald-400" : "bg-zinc-500/10 text-zinc-400"

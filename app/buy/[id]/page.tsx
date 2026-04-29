@@ -2,7 +2,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { getProductById, getAvailableCardCount } from "@/lib/supabase"
 import { BuyForm } from "./buy-form"
-import { ArrowLeft, Package } from "lucide-react"
+import { ArrowLeft, Package, TrendingUp } from "lucide-react"
 
 export const dynamic = "force-dynamic"
 
@@ -33,9 +33,13 @@ export default async function BuyPage({ params }: Props) {
       <div className="overflow-hidden rounded-2xl border border-zinc-800 bg-zinc-900/50">
         <div className="border-b border-zinc-800 p-6">
           <div className="flex items-start gap-4">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900">
-              <Package className="h-8 w-8 text-zinc-500" />
-            </div>
+            {product.image_url ? (
+              <img src={product.image_url} alt={product.name} className="h-16 w-16 shrink-0 rounded-xl object-cover" />
+            ) : (
+              <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-zinc-800 to-zinc-900">
+                <Package className="h-8 w-8 text-zinc-500" />
+              </div>
+            )}
             <div>
               <h1 className="text-xl font-bold text-white">{product.name}</h1>
               {product.description && (
@@ -59,6 +63,12 @@ export default async function BuyPage({ params }: Props) {
                   />
                   {stock > 0 ? `库存 ${stock}` : "缺货"}
                 </span>
+                {(product.sold_count || 0) > 0 && (
+                  <span className="inline-flex items-center gap-1 text-xs text-zinc-500">
+                    <TrendingUp className="h-3 w-3" />
+                    已售 {product.sold_count}
+                  </span>
+                )}
               </div>
             </div>
           </div>

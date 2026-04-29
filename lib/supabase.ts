@@ -92,6 +92,20 @@ export async function getAvailableCardCount(productId: string): Promise<number> 
   return count || 0
 }
 
+export async function getSoldCount(productId: string): Promise<number> {
+  const client = getServerSideClient()
+  const { count, error } = await client
+    .from('order_items')
+    .select('*', { count: 'exact', head: true })
+    .eq('product_id', productId)
+
+  if (error) {
+    console.error('getSoldCount error:', error)
+    return 0
+  }
+  return count || 0
+}
+
 export async function getOrderByIdAndEmail(orderId: string, email: string): Promise<OrderWithItems | null> {
   const client = getClientSideClient()
   const { data: order, error: orderError } = await client

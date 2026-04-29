@@ -86,6 +86,14 @@ export async function POST(req: NextRequest) {
       console.error("Card update error:", updateCardError)
     }
 
+    // Increment product sold_count
+    const { error: soldCountError } = await supabase.rpc("increment_sold_count", {
+      product_id: productId,
+    })
+    if (soldCountError) {
+      console.error("Sold count increment error:", soldCountError)
+    }
+
     // Send email
     try {
       await sendCardEmail({
